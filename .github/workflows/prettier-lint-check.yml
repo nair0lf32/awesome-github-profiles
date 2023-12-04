@@ -8,8 +8,6 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   prettier:
@@ -18,19 +16,23 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x]
+        node-version: [16.x]
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Load Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install Deps
-        run: npm ci
-
-      - name: Run Prettier
-        run: npm run lint
+      - run: npm ci
+      - name: Prettier
+        run: npm run format
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        with:
+          commit_message: "style: format files"
